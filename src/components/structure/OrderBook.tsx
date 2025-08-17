@@ -18,10 +18,27 @@ function OrderBook() {
     return () => ws.close();
   }, [dispatch]);
 
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/orders");
+      const data = await response.json();
+      console.log("Fetched orders:", data);
+      dispatch(setBookOrders(data));
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+    }
+  };
+
   return (
     <div>
       <h2>Order Book</h2>
       <pre>{JSON.stringify(orders, null, 2)}</pre>
+      <button
+        onClick={fetchOrders}
+        className="bg-blue-500 text-white p-2 rounded"
+      >
+        Fetch{" "}
+      </button>
     </div>
   );
 }

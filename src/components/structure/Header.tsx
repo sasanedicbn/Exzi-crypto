@@ -1,5 +1,6 @@
 import Button from "../reusable/Button";
 import HeaderBalance from "./HeaderBalance";
+import OrderBook from "./OrderBook";
 
 const Header = () => {
   const connectWallet = () => {
@@ -15,6 +16,7 @@ const Header = () => {
         </Button>
       </header>
       <HeaderBalance />
+      <OrderBook />
     </div>
   );
 };
