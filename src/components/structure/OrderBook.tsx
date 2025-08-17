@@ -4,7 +4,7 @@ import { setBookOrders } from "../../store/store";
 
 function OrderBook() {
   const dispatch = useDispatch();
-  const orders = useSelector((state) => state.orders);
+  const { orders } = useSelector((state) => state.orders);
 
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:5000");
@@ -12,51 +12,87 @@ function OrderBook() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("Received data:", data);
-        console.log("data b", data.b);
 
-        const formatOrders = (orders: string[][]) =>
-          orders.map(([price, amount]) => {
-            const p = parseFloat(price);
-            const q = parseFloat(amount);
-            return { price: p, amount: q, total: p * q };
-          });
+        const formatOrders = (orders) =>
+          orders.map(([price, amount]) => ({
+            price: parseFloat(price),
+            amount: parseFloat(amount),
+            total: parseFloat(price) * parseFloat(amount),
+          }));
 
         const formatted = {
-          bids: formatOrders(data.b),
-          asks: formatOrders(data.a),
+          bids: data.b ? formatOrders(data.b) : [],
+          asks: data.a ? formatOrders(data.a) : [],
         };
 
         dispatch(setBookOrders(formatted));
       } catch (err) {
-        console.error("Greška pri parsiranju WS poruke:", err);
+        console.error("WebSocket parsing error:", err);
       }
     };
 
     return () => ws.close();
   }, [dispatch]);
 
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/orders");
-      const data = await response.json();
-      console.log("Fetched orders:", data);
-      dispatch(setBookOrders(data));
-    } catch (error) {
-      console.error("Failed to fetch orders:", error);
-    }
-  };
-
   return (
-    <div>
-      <h2>Order Book</h2>
-      {/* <pre>{JSON.stringify(orders, null, 2)}</pre> */}
-      <button
-        onClick={fetchOrders}
-        className="bg-blue-500 text-white p-2 rounded"
-      >
-        Fetch{" "}
-      </button>
+    <div className="order-book p-4 max-w-md flex flex-start flex-col">
+      <h2 className="text-lg font-bold mb-4 text-center">Order Book</h2>
+
+      <div className="mb-8">
+        <h3 className="font-semibold text-green-600 mb-2">Bids</h3>
+        <table className="w-full border-none">
+          <thead>
+            <tr>
+              <th className="border p-2 text-left w-1/3">Price</th>
+              <th className="border p-2 text-left w-1/3">Amount</th>
+              <th className="border p-2 text-left w-1/3">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders?.bids?.map((order, index) => (
+              <tr key={`bid-${index}`}>
+                <td className="border p-2 text-green-600 font-mono">
+                  {order.price.toFixed(2)}
+                </td>
+                <td className="border p-2 font-mono">
+                  {order.amount.toFixed(4)}
+                </td>
+                <td className="border p-2 font-mono">
+                  {order.total.toFixed(2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h3 className="font-semibold text-red-600 mb-2">Asks</h3>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th className="border p-2 text-left w-1/3">Price</th>
+              <th className="border p-2 text-left w-1/3">Amount</th>
+              <th className="border p-2 text-left w-1/3">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders?.asks?.map((order, index) => (
+              <tr key={`ask-${index}`}>
+                <td className="border p-2 text-red-600 font-mono">
+                  {order.price.toFixed(2)}
+                </td>
+                <td className="border p-2 font-mono">
+                  {order.amount.toFixed(4)}
+                </td>
+                <td className="border p-2 font-mono">
+                  {order.total.toFixed(2)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
