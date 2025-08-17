@@ -4,16 +4,14 @@ interface InputProps {
 }
 const Input = ({ valueText, currency }: InputProps) => {
   return (
-    <div>
-      <label className="block mb-2 text-sm font-medium text-gray-700">
-        {valueText}
-      </label>
+    <div className="flex justify-between items-center  rounded-full p-3  w-1/2 bg-[#334155] ">
+      <label className="">{valueText}</label>
       <input
         type="text"
         placeholder="0"
-        className="border border-gray-300 rounded p-2 w-full"
+        className="border-none mx-4 text-right pr-1 focus:border-none focus:outline-none"
       />
-      <span className="text-xs text-gray-500">{currency}</span>
+      <span>{currency}</span>
     </div>
   );
 };

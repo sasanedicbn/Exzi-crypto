@@ -9,7 +9,7 @@ const HeaderBalance = () => {
         <SelectOptions options={["BTC/USD", "ETH/USD", "XRP/USD"]} />
       </div>
       <div className="flex justify-between items-center gap-6">
-        <p>Input your balance</p>
+        <p className="text-gray-400 whitespace-nowrap">Input your balance</p>
         <Input valueText={"Balance"} currency={"BTC"} />
         <Input valueText={"Balance"} currency={"USDT"} />
       </div>
