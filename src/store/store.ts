@@ -20,7 +20,9 @@ export const { setBookOrders} = orderSlice.actions;
 export default orderSlice.reducer;
 
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    orders: orderSlice.reducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

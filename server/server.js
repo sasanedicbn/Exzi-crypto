@@ -1,29 +1,41 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-// import WebSocket from "ws";
-
-dotenv.config();
+import { WebSocket, WebSocketServer } from "ws";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+// test ruta
 app.get("/orders", (req, res) => {
-  res.json("API bez baze radi ✅");
+  res.json({ message: "API radi ✅" });
 });
 
-// primjer websocket konekcije na eksterni API
-// const ws = new WebSocket("wss://example-wallet-api.com/stream");
+// start Express server
+const server = app.listen(5000, () => console.log("Server na portu 5000"));
 
-// ws.on("open", () => {
-//   console.log("Spojen na Wallet API ✅");
-// });
+// WebSocket server za frontend
+const wss = new WebSocketServer({ server });
 
-// ws.on("message", (data) => {
-//   console.log("Podaci sa wallet API-ja:", data.toString());
-// });
+wss.on("connection", (wsClient) => {
+  console.log("Frontend se spojio na WS ✅");
 
-app.listen(process.env.PORT || 5000, () => {
-  console.log(`Server radi na portu ${process.env.PORT || 5000}`);
+  const binanceWS = new WebSocket(
+    "wss://stream.binance.com:9443/ws/btcusdt@depth"
+  );
+
+  binanceWS.on("open", () => console.log("Spojen na Binance ✅"));
+  binanceWS.on("message", (msg) => wsClient.send(msg.toString()));
+  binanceWS.on("error", (err) => console.error("Binance WS error:", err));
+
+  wsClient.on("close", () => {
+    if (
+      binanceWS.readyState === WebSocket.OPEN ||
+      binanceWS.readyState === WebSocket.CONNECTING
+    ) {
+      binanceWS.close();
+    }
+  });
+
+  wsClient.on("error", (err) => console.error("Client WS error:", err));
 });

@@ -7,12 +7,30 @@ function OrderBook() {
   const orders = useSelector((state) => state.orders);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:5173");
+    const ws = new WebSocket("ws://localhost:5000");
 
     ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      // Binance depth data ima bids i asks
-      dispatch(setBookOrders(data));
+      try {
+        const data = JSON.parse(event.data);
+        console.log("Received data:", data);
+        console.log("data b", data.b);
+
+        const formatOrders = (orders: string[][]) =>
+          orders.map(([price, amount]) => {
+            const p = parseFloat(price);
+            const q = parseFloat(amount);
+            return { price: p, amount: q, total: p * q };
+          });
+
+        const formatted = {
+          bids: formatOrders(data.b),
+          asks: formatOrders(data.a),
+        };
+
+        dispatch(setBookOrders(formatted));
+      } catch (err) {
+        console.error("Greška pri parsiranju WS poruke:", err);
+      }
     };
 
     return () => ws.close();
@@ -32,7 +50,7 @@ function OrderBook() {
   return (
     <div>
       <h2>Order Book</h2>
-      <pre>{JSON.stringify(orders, null, 2)}</pre>
+      {/* <pre>{JSON.stringify(orders, null, 2)}</pre> */}
       <button
         onClick={fetchOrders}
         className="bg-blue-500 text-white p-2 rounded"
